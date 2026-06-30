@@ -33,14 +33,16 @@ void main() async {
 void _applyWebLaunchParams() {
   final room = Uri.base.queryParameters['room'];
   final viewer = Uri.base.queryParameters['viewer'];
+  final ntfy = Uri.base.queryParameters['ntfy'];
+
+  if (viewer == '1' && room != null && room.isNotEmpty) {
+    AppConfig.applyViewerLink(room: room, ntfy: ntfy);
+    return;
+  }
 
   if (room != null && room.isNotEmpty) {
     AppConfig.roomCode = room;
   }
-  if (viewer == '1') {
-    AppConfig.isViewer = true;
-  }
-  final ntfy = Uri.base.queryParameters['ntfy'];
   if (ntfy != null && ntfy.isNotEmpty) {
     AppConfig.ntfyTopic = ntfy;
   }

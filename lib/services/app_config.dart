@@ -8,16 +8,37 @@ class AppConfig {
   static String get roomCode =>
       (_box.get('roomCode') as String?)?.trim() ?? '';
 
-  static set roomCode(String value) => _box.put('roomCode', value.trim());
+  static set roomCode(String value) {
+    final trimmed = value.trim();
+    if (_isRoomCodeLocked && roomCode.isNotEmpty && trimmed != roomCode) return;
+    _box.put('roomCode', trimmed);
+  }
 
   static bool get isViewer => _box.get('isViewer', defaultValue: false) as bool;
 
-  static set isViewer(bool value) => _box.put('isViewer', value);
+  static set isViewer(bool value) {
+    if (_isRoomCodeLocked && !value) return;
+    _box.put('isViewer', value);
+  }
+
+  static bool get roomCodeLocked =>
+      _box.get('roomCodeLocked', defaultValue: false) as bool;
+
+  static set roomCodeLocked(bool value) => _box.put('roomCodeLocked', value);
+
+  static bool get _isRoomCodeLocked =>
+      roomCodeLocked || (isViewer && roomCode.isNotEmpty);
 
   static String get ntfyTopic =>
       (_box.get('ntfyTopic') as String?)?.trim() ?? '';
 
-  static set ntfyTopic(String value) => _box.put('ntfyTopic', value.trim());
+  static set ntfyTopic(String value) {
+    final trimmed = value.trim();
+    if (_isRoomCodeLocked && ntfyTopic.isNotEmpty && trimmed != ntfyTopic) {
+      return;
+    }
+    _box.put('ntfyTopic', trimmed);
+  }
 
   static bool get notifyPartner =>
       _box.get('notifyPartner', defaultValue: true) as bool;
@@ -34,7 +55,23 @@ class AppConfig {
 
   static set biometricEnabled(bool value) => _box.put('biometricEnabled', value);
 
+  /// Called when partner opens the shared viewer link.
+  static void applyViewerLink({
+    required String room,
+    String? ntfy,
+  }) {
+    roomCodeLocked = true;
+    roomCode = room;
+    isViewer = true;
+    if (ntfy != null && ntfy.isNotEmpty) {
+      ntfyTopic = ntfy;
+    }
+  }
+
   static String generateRoomCode() {
+    if (_isRoomCodeLocked) {
+      throw StateError('Deelcode is vergrendeld');
+    }
     const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
     final random = Random.secure();
     return List.generate(8, (_) => chars[random.nextInt(chars.length)]).join();

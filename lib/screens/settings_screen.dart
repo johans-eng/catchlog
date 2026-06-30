@@ -63,6 +63,46 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               const SizedBox(height: 24),
               if (_isViewer) ...[
+                _section('GEKOPPELD'),
+                AppCard(
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text(
+                        'Deelcode',
+                        style: TextStyle(
+                          color: Color(0xFF8E8E93),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      SelectableText(
+                        AppConfig.roomCode.isEmpty
+                            ? 'Geen code — open de gedeelde link opnieuw'
+                            : AppConfig.roomCode,
+                        style: const TextStyle(
+                          color: Color(0xFF0A84FF),
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Vastgezet via jouw link. Add to Home Screen om te bewaren.',
+                        style: TextStyle(
+                          color: Color(0xFF8E8E93),
+                          fontSize: 12,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
                 _ntfySection(showSubscribeButton: true),
               ] else ...[
                 _section('DEEL MET PARTNER'),
@@ -94,6 +134,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       const SizedBox(height: 8),
                       TextField(
                         controller: roomController,
+                        readOnly: AppConfig.roomCodeLocked,
                         style: const TextStyle(
                           color: Colors.white,
                           decoration: TextDecoration.none,
@@ -109,23 +150,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           hintStyle: TextStyle(
                             color: Colors.white.withValues(alpha: 0.3),
                           ),
+                          suffixIcon: AppConfig.roomCodeLocked
+                              ? const Icon(Icons.lock, color: Color(0xFF8E8E93))
+                              : null,
                         ),
-                        onChanged: (v) => AppConfig.roomCode = v,
+                        onChanged: AppConfig.roomCodeLocked
+                            ? null
+                            : (v) => AppConfig.roomCode = v,
                       ),
                       const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
                             child: OutlinedButton(
-                              onPressed: () {
-                                final code = AppConfig.generateRoomCode();
-                                final topic = 'jopie-$code';
-                                roomController.text = code;
-                                ntfyController.text = topic;
-                                AppConfig.roomCode = code;
-                                AppConfig.ntfyTopic = topic;
-                                setState(() {});
-                              },
+                              onPressed: AppConfig.roomCodeLocked
+                                ? null
+                                : () {
+                                    final code = AppConfig.generateRoomCode();
+                                    final topic = 'jopie-$code';
+                                    roomController.text = code;
+                                    ntfyController.text = topic;
+                                    AppConfig.roomCode = code;
+                                    AppConfig.ntfyTopic = topic;
+                                    setState(() {});
+                                  },
                               child: const Text('Nieuwe code'),
                             ),
                           ),
