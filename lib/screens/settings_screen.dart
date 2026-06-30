@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../constants/app_branding.dart';
 import '../widgets/app_background.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -18,9 +19,9 @@ class SettingsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const ScreenTitle(
+              ScreenTitle(
                 title: 'Settings',
-                subtitle: 'Beheer je CatchLog data',
+                subtitle: "Beheer je ${AppBranding.name} data",
               ),
               const SizedBox(height: 32),
               AppCard(

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
+import '../constants/app_branding.dart';
+import '../utils/day_clock.dart';
+import '../utils/entry_stats.dart';
 import '../constants/outcomes.dart';
 import '../widgets/app_background.dart';
 
@@ -16,6 +19,9 @@ class StatsScreen extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: box.listenable(),
       builder: (context, _, __) {
+        return ListenableBuilder(
+          listenable: DayClock.instance,
+          builder: (context, _) {
         final items = box.values.toList();
         final outcomeCounts = _countOutcomes(items);
         final total = items.length;
@@ -32,9 +38,9 @@ class StatsScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        const ScreenTitle(
+                        ScreenTitle(
                           title: 'Stats',
-                          subtitle: 'Overzicht van uitkomsten en activiteit',
+                          subtitle: "Overzicht van ${AppBranding.name}",
                         ),
                         const SizedBox(height: 28),
                         _sectionLabel('UITKOMSTEN'),
@@ -75,7 +81,7 @@ class StatsScreen extends StatelessWidget {
                               _summaryItem('Totaal', '$total'),
                               _summaryItem(
                                 'Vandaag',
-                                '${_todayCount(items)}',
+                                '${countTodayEntries(items)}',
                               ),
                               _summaryItem(
                                 'Goederen',
@@ -88,6 +94,8 @@ class StatsScreen extends StatelessWidget {
                     ),
                   ),
           ),
+        );
+          },
         );
       },
     );
@@ -435,16 +443,6 @@ class StatsScreen extends StatelessWidget {
     }
 
     return result;
-  }
-
-  int _todayCount(List<dynamic> items) {
-    final now = DateTime.now();
-    return items.where((e) {
-      final t = DateTime.fromMillisecondsSinceEpoch(e['time']);
-      return t.day == now.day &&
-          t.month == now.month &&
-          t.year == now.year;
-    }).length;
   }
 
   int _totalAmount(List<dynamic> items) {

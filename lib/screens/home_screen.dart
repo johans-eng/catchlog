@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../constants/app_branding.dart';
+import '../utils/day_clock.dart';
+import '../utils/entry_stats.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/app_background.dart';
 import 'glow_ring.dart';
@@ -12,19 +15,35 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   final box = Hive.box('entries');
 
-  int get todayCount {
-    final now = DateTime.now();
-
-    return box.values.where((e) {
-      final t = DateTime.fromMillisecondsSinceEpoch(e['time']);
-      return t.day == now.day &&
-          t.month == now.month &&
-          t.year == now.year;
-    }).length;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    DayClock.instance.addListener(_onDayChanged);
   }
+
+  @override
+  void dispose() {
+    DayClock.instance.removeListener(_onDayChanged);
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  void _onDayChanged() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed && mounted) {
+      setState(() {});
+    }
+  }
+
+  int get todayCount => countTodayEntries(box.values);
 
   int get totalCount => box.length;
 
@@ -40,10 +59,16 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               children: [
                 const SizedBox(height: 20),
+                Image.asset(
+                  AppBranding.logoAsset,
+                  width: 56,
+                  height: 56,
+                ),
+                const SizedBox(height: 12),
                 const Text(
-                  'CatchLog',
+                  AppBranding.name,
                   style: TextStyle(
-                    fontSize: 30,
+                    fontSize: 28,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -0.5,
                     color: Colors.white,
@@ -52,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 6),
                 const Text(
-                  'Stay focused. Stay aware.',
+                  AppBranding.tagline,
                   style: TextStyle(
                     color: Color(0xFF8E8E93),
                     fontSize: 13,

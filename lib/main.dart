@@ -9,19 +9,22 @@ import 'screens/stats_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/lock_screen.dart';
 
+import 'utils/day_clock.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
     usePathUrlStrategy();
   }
+  DayClock.instance;
   await Hive.initFlutter();
   await Hive.openBox('entries');
 
-  runApp(const CatchLogApp());
+  runApp(const JopiesCatchesApp());
 }
 
-class CatchLogApp extends StatelessWidget {
-  const CatchLogApp({super.key});
+class JopiesCatchesApp extends StatelessWidget {
+  const JopiesCatchesApp({super.key});
 
   @override
   Widget build(BuildContext context) {

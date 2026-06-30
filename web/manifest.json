@@ -1,11 +1,11 @@
 {
-    "name": "CatchLog",
-    "short_name": "CatchLog",
+    "name": "Jopie's Catches",
+    "short_name": "Jopie's",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#050508",
     "theme_color": "#050508",
-    "description": "Stay focused. Stay aware.",
+    "description": "Vandaag geteld. Alles bijgehouden.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [
