@@ -46,7 +46,19 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
 
     final overlay = Overlay.of(context, rootOverlay: true);
 
-    await store.addEntry(amount: value, outcome: selectedOutcome);
+    try {
+      await store.addEntry(amount: value, outcome: selectedOutcome);
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(
+            'Opgeslagen lokaal, maar cloud sync mislukt. '
+            'Controleer je deelcode in Settings. ($e)',
+          ),
+        ),
+      );
+      return;
+    }
 
     final entries = store.usesCloud
         ? await _fetchCloudEntries()

@@ -93,7 +93,7 @@ class _GlowRingState extends State<GlowRing>
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 const Text(
-                  'THIEVES CAUGHT',
+                  'DIEVEN GEVANGEN',
                   style: TextStyle(
                     color: Color(0xFF8E8E93),
                     fontSize: 11,
@@ -124,7 +124,7 @@ class _GlowRingState extends State<GlowRing>
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: const Text(
-                    'TODAY',
+                    'VANDAAG',
                     style: TextStyle(
                       color: Color(0xFF0A84FF),
                       fontSize: 12,

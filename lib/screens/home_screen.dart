@@ -4,6 +4,7 @@ import '../constants/app_branding.dart';
 import '../constants/outcomes.dart';
 import '../services/app_config.dart';
 import '../services/entry_store.dart';
+import '../services/firebase_service.dart';
 import '../utils/day_clock.dart';
 import '../utils/entry_stats.dart';
 import '../widgets/jopies_logo.dart';
@@ -129,11 +130,27 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
                           ),
                         ],
                       ),
+                    ] else if (!isViewer &&
+                        FirebaseService.isReady &&
+                        AppConfig.roomCode.isEmpty) ...[
+                      const SizedBox(height: 12),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: Text(
+                          'Geen deelcode ingesteld — ga naar Settings om live sync te activeren.',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.orange.withValues(alpha: 0.9),
+                            fontSize: 12,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                      ),
                     ],
                     const SizedBox(height: 36),
                     Center(child: GlowRing(value: todayCount)),
                     const SizedBox(height: 28),
-                    _infoCard('TOTAL CAUGHT', '$totalCount'),
+                    _infoCard('TOTAAL GEVANGEN', '$totalCount'),
                     const SizedBox(height: 12),
                     Row(
                       children: [

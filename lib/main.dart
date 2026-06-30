@@ -17,12 +17,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
     usePathUrlStrategy();
-    _applyWebLaunchParams();
   }
   DayClock.instance;
   await Hive.initFlutter();
   await Hive.openBox('entries');
   await Hive.openBox('settings');
+  if (kIsWeb) {
+    _applyWebLaunchParams();
+  }
   await FirebaseService.init();
 
   runApp(const JopiesCatchesApp());

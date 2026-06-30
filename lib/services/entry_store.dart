@@ -21,7 +21,7 @@ class EntryStore {
 
   Stream<List<Map<String, dynamic>>> watchEntries() {
     if (usesCloud) {
-      return FirebaseService.watchEntries();
+      return FirebaseService.watchEntries().map(_mergeWithLocal);
     }
     return Stream.value(localEntries);
   }
@@ -38,11 +38,36 @@ class EntryStore {
       'time': DateTime.now().millisecondsSinceEpoch,
     };
 
-    if (usesCloud) {
+    await _local.add(entry);
+
+    if (!usesCloud) return;
+
+    try {
       await FirebaseService.addEntry(entry);
-    } else {
-      await _local.add(entry);
+    } catch (e, stack) {
+      debugPrint('Firebase sync failed: $e\n$stack');
+      rethrow;
     }
+  }
+
+  List<Map<String, dynamic>> _mergeWithLocal(
+    List<Map<String, dynamic>> cloud,
+  ) {
+    final merged = [...cloud];
+    for (final local in localEntries) {
+      final exists = merged.any((e) => _sameEntry(e, local));
+      if (!exists) merged.add(local);
+    }
+    merged.sort(
+      (a, b) => ((a['time'] as int?) ?? 0).compareTo((b['time'] as int?) ?? 0),
+    );
+    return merged;
+  }
+
+  bool _sameEntry(Map<String, dynamic> a, Map<String, dynamic> b) {
+    return a['time'] == b['time'] &&
+        a['amount'] == b['amount'] &&
+        a['outcome'] == b['outcome'];
   }
 
   int todayCountFrom(List<Map<String, dynamic>> entries) {

@@ -42,7 +42,9 @@ class FirebaseService {
 
   static Future<void> addEntry(Map<String, dynamic> entry) async {
     final ref = entriesRef();
-    if (ref == null) return;
+    if (ref == null) {
+      throw StateError('Firebase niet klaar of geen deelcode ingesteld');
+    }
     await ref.add(entry);
   }
 }
