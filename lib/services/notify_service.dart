@@ -27,7 +27,7 @@ class NotifyService {
           'Tags': 'rotating_light',
         },
         body:
-            'Dief gelogged! Vandaag: $today | Totaal: $total | $outcome | $amount goederen',
+            'Dief gelogged! Vandaag: $today | Totaal: $total | $outcome | waarde €$amount',
       );
     } catch (_) {
       // Notification failure should not block logging.
