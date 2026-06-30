@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_branding.dart';
+import '../services/app_config.dart';
 import '../widgets/jopies_logo.dart';
 import '../widgets/app_background.dart';
 
@@ -32,6 +33,8 @@ class _LockScreenState extends State<LockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (AppConfig.isViewer) return widget.child;
+
     if (unlocked) return widget.child;
 
     return Scaffold(

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 
 import '../constants/app_branding.dart';
+import '../services/app_config.dart';
+import '../services/entry_store.dart';
 import '../utils/day_clock.dart';
-import '../utils/entry_stats.dart';
 import '../widgets/jopies_logo.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/app_background.dart';
@@ -17,86 +17,165 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
-  final box = Hive.box('entries');
+  final store = EntryStore.instance;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    DayClock.instance.addListener(_onDayChanged);
+    DayClock.instance.addListener(_refresh);
   }
 
   @override
   void dispose() {
-    DayClock.instance.removeListener(_onDayChanged);
+    DayClock.instance.removeListener(_refresh);
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
-  void _onDayChanged() {
+  void _refresh() {
     if (mounted) setState(() {});
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed && mounted) {
-      setState(() {});
-    }
+    if (state == AppLifecycleState.resumed && mounted) setState(() {});
   }
-
-  int get todayCount => countTodayEntries(box.values);
-
-  int get totalCount => box.length;
-
-  bool get isActive => todayCount > 0;
 
   @override
   Widget build(BuildContext context) {
+    final isViewer = AppConfig.isViewer;
+
+    if (store.usesCloud) {
+      return StreamBuilder<List<Map<String, dynamic>>>(
+        stream: store.watchEntries(),
+        builder: (context, snapshot) =>
+            _buildBody(isViewer, snapshot.data ?? []),
+      );
+    }
+
     return ValueListenableBuilder(
-      valueListenable: box.listenable(),
-      builder: (context, _, __) {
-        return AppScaffold(
-          body: SafeArea(
-            child: Column(
-              children: [
-                const SizedBox(height: 20),
-                JopiesLogo(size: 56),
-                const SizedBox(height: 12),
-                const Text(
-                  AppBranding.name,
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: -0.5,
-                    color: Colors.white,
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                const Text(
-                  AppBranding.tagline,
-                  style: TextStyle(
-                    color: Color(0xFF8E8E93),
-                    fontSize: 13,
-                    decoration: TextDecoration.none,
-                  ),
-                ),
-                const SizedBox(height: 50),
-                Center(
-                  child: GlowRing(value: todayCount),
-                ),
-                const SizedBox(height: 35),
-                _infoCard('TOTAL CAUGHT', '$totalCount'),
-                const SizedBox(height: 15),
-                _statusCard(),
-                const Spacer(),
-                _logButton(context),
-                const SizedBox(height: 20),
-              ],
+      valueListenable: store.localListenable,
+      builder: (context, _, __) => _buildBody(isViewer, store.localEntries),
+    );
+  }
+
+  Widget _buildBody(bool isViewer, List<Map<String, dynamic>> entries) {
+    final todayCount = store.todayCountFrom(entries);
+    final totalCount = store.totalCountFrom(entries);
+    final isActive = todayCount > 0;
+
+    return AppScaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            const SizedBox(height: 20),
+            JopiesLogo(size: 56),
+            const SizedBox(height: 12),
+            Text(
+              isViewer ? 'Live feed' : AppBranding.name,
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w700,
+                letterSpacing: -0.5,
+                color: Colors.white,
+                decoration: TextDecoration.none,
+              ),
             ),
-          ),
-        );
-      },
+            const SizedBox(height: 6),
+            Text(
+              isViewer
+                  ? 'Updates automatisch wanneer er een dief is gelogd'
+                  : AppBranding.tagline,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Color(0xFF8E8E93),
+                fontSize: 13,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            if (store.usesCloud) ...[
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF30D158),
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    'Live sync',
+                    style: TextStyle(
+                      color: Color(0xFF30D158),
+                      fontSize: 12,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+            const SizedBox(height: 50),
+            Center(child: GlowRing(value: todayCount)),
+            const SizedBox(height: 35),
+            _infoCard('TOTAL CAUGHT', '$totalCount'),
+            const SizedBox(height: 15),
+            _statusCard(isActive),
+            const Spacer(),
+            if (isViewer && AppConfig.ntfyTopic.isNotEmpty)
+              _ntfyHint(AppConfig.ntfyTopic),
+            if (!isViewer) _logButton(context),
+            if (isViewer) const SizedBox(height: 20),
+            if (!isViewer) const SizedBox(height: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _ntfyHint(String topic) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+      child: AppCard(
+        margin: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            const Text(
+              'Pushmeldingen',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Installeer de gratis ntfy app en abonneer op dit topic:',
+              style: TextStyle(
+                color: Color(0xFF8E8E93),
+                fontSize: 13,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 10),
+            SelectableText(
+              topic,
+              style: const TextStyle(
+                color: Color(0xFF0A84FF),
+                fontSize: 15,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -177,7 +256,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     );
   }
 
-  Widget _statusCard() {
+  Widget _statusCard(bool isActive) {
     final statusColor =
         isActive ? const Color(0xFF30D158) : const Color(0xFFFF9F0A);
 

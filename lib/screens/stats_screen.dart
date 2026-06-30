@@ -1,9 +1,9 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import 'package:hive_flutter/hive_flutter.dart';
 import 'package:intl/intl.dart';
 
 import '../constants/app_branding.dart';
+import '../services/entry_store.dart';
 import '../utils/day_clock.dart';
 import '../utils/entry_stats.dart';
 import '../constants/outcomes.dart';
@@ -14,15 +14,30 @@ class StatsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final box = Hive.box('entries');
+    final store = EntryStore.instance;
+
+    Widget buildWith(List<Map<String, dynamic>> items) {
+      return ListenableBuilder(
+        listenable: DayClock.instance,
+        builder: (context, _) => _buildStats(items),
+      );
+    }
+
+    if (store.usesCloud) {
+      return StreamBuilder<List<Map<String, dynamic>>>(
+        stream: store.watchEntries(),
+        builder: (context, snapshot) =>
+            buildWith(snapshot.data ?? []),
+      );
+    }
 
     return ValueListenableBuilder(
-      valueListenable: box.listenable(),
-      builder: (context, _, __) {
-        return ListenableBuilder(
-          listenable: DayClock.instance,
-          builder: (context, _) {
-        final items = box.values.toList();
+      valueListenable: store.localListenable,
+      builder: (context, _, __) => buildWith(store.localEntries),
+    );
+  }
+
+  Widget _buildStats(List<Map<String, dynamic>> items) {
         final outcomeCounts = _countOutcomes(items);
         final total = items.length;
         final dailyThieves = _dailyThieves(items, 7);
@@ -95,10 +110,6 @@ class StatsScreen extends StatelessWidget {
                   ),
           ),
         );
-          },
-        );
-      },
-    );
   }
 
   Widget _emptyState() {

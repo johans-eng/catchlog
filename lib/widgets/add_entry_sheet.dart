@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:hive/hive.dart';
 
 import '../constants/outcomes.dart';
+import '../services/entry_store.dart';
+import '../services/firebase_service.dart';
+import '../services/notify_service.dart';
 import 'success_notification.dart';
 
 Future<void> showAddEntrySheet(BuildContext context) {
@@ -22,7 +24,7 @@ class AddEntrySheet extends StatefulWidget {
 
 class _AddEntrySheetState extends State<AddEntrySheet> {
   final amountController = TextEditingController();
-  final box = Hive.box('entries');
+  final store = EntryStore.instance;
   String selectedOutcome = Outcomes.all.first;
 
   @override
@@ -31,7 +33,7 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
     super.dispose();
   }
 
-  void save() {
+  Future<void> save() async {
     final amount = int.tryParse(amountController.text.trim());
     final messenger = ScaffoldMessenger.of(context);
 
@@ -44,14 +46,28 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
 
     final overlay = Overlay.of(context, rootOverlay: true);
 
-    box.add({
-      'amount': amount,
-      'outcome': selectedOutcome,
-      'time': DateTime.now().millisecondsSinceEpoch,
-    });
+    await store.addEntry(amount: amount, outcome: selectedOutcome);
 
+    final entries = store.usesCloud
+        ? await _fetchCloudEntries()
+        : store.localEntries;
+
+    await NotifyService.notifyPartner(
+      allEntries: entries,
+      outcome: selectedOutcome,
+      amount: amount,
+    );
+
+    if (!context.mounted) return;
     Navigator.pop(context);
     showCatchSuccessNotification(overlay);
+  }
+
+  Future<List<Map<String, dynamic>>> _fetchCloudEntries() async {
+    final ref = FirebaseService.entriesRef();
+    if (ref == null) return store.localEntries;
+    final snap = await ref.orderBy('time').get();
+    return snap.docs.map((d) => d.data()).toList();
   }
 
   @override

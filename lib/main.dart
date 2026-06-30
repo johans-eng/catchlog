@@ -8,19 +8,39 @@ import 'screens/home_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/lock_screen.dart';
-
+import 'services/app_config.dart';
+import 'services/firebase_service.dart';
 import 'utils/day_clock.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (kIsWeb) {
     usePathUrlStrategy();
+    _applyWebLaunchParams();
   }
   DayClock.instance;
   await Hive.initFlutter();
   await Hive.openBox('entries');
+  await Hive.openBox('settings');
+  await FirebaseService.init();
 
   runApp(const JopiesCatchesApp());
+}
+
+void _applyWebLaunchParams() {
+  final room = Uri.base.queryParameters['room'];
+  final viewer = Uri.base.queryParameters['viewer'];
+
+  if (room != null && room.isNotEmpty) {
+    AppConfig.roomCode = room;
+  }
+  if (viewer == '1') {
+    AppConfig.isViewer = true;
+  }
+  final ntfy = Uri.base.queryParameters['ntfy'];
+  if (ntfy != null && ntfy.isNotEmpty) {
+    AppConfig.ntfyTopic = ntfy;
+  }
 }
 
 class JopiesCatchesApp extends StatelessWidget {
@@ -61,6 +81,8 @@ class RootPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isViewer = AppConfig.isViewer;
+
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
         activeColor: Color(0xFF0A84FF),
@@ -68,19 +90,30 @@ class RootPage extends StatelessWidget {
         items: [
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.home),
-            label: 'Home',
+            label: isViewer ? 'Live' : 'Home',
           ),
           BottomNavigationBarItem(
             icon: Icon(CupertinoIcons.chart_bar),
             label: 'Stats',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.settings),
-            label: 'Settings',
-          ),
+          if (!isViewer)
+            BottomNavigationBarItem(
+              icon: Icon(CupertinoIcons.settings),
+              label: 'Settings',
+            ),
         ],
       ),
       tabBuilder: (context, index) {
+        if (isViewer) {
+          switch (index) {
+            case 0:
+              return const HomeScreen();
+            case 1:
+              return const StatsScreen();
+            default:
+              return const HomeScreen();
+          }
+        }
         switch (index) {
           case 0:
             return const HomeScreen();

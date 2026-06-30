@@ -1,0 +1,10 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Free tier: room code acts as the secret. Anyone with the code can read/write.
+    // Use a long random code (app generates 8 chars) and don't share it publicly.
+    match /rooms/{roomId}/entries/{entryId} {
+      allow read, write: if true;
+    }
+  }
+}

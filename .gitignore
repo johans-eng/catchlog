@@ -36,6 +36,11 @@ migrate_working_dir/
 # Local editor / tooling
 .cursor/
 
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
 # Symbolication related
 app.*.symbols
 
