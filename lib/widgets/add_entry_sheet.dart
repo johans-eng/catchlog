@@ -5,6 +5,7 @@ import '../services/entry_store.dart';
 import '../services/firebase_service.dart';
 import '../services/notify_service.dart';
 import 'success_notification.dart';
+import 'app_button.dart';
 
 Future<void> showAddEntrySheet(BuildContext context) {
   return showModalBottomSheet<void>(
@@ -224,25 +225,15 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
               ),
             ),
             const SizedBox(height: 24),
-            SizedBox(
-              height: 52,
-              child: ElevatedButton(
-                onPressed: save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0A84FF),
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'Opslaan',
-                  style: TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w600,
-                    decoration: TextDecoration.none,
-                  ),
+            AppPrimaryButton(
+              onPressed: save,
+              child: const Text(
+                'Opslaan',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
                 ),
               ),
             ),

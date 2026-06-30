@@ -43,10 +43,11 @@ class _GlowRingState extends State<GlowRing>
     return SizedBox(
       width: size,
       height: size,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Container(
+      child: IgnorePointer(
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Container(
             width: size,
             height: size,
             decoration: BoxDecoration(
@@ -138,6 +139,7 @@ class _GlowRingState extends State<GlowRing>
             ),
           ),
         ],
+        ),
       ),
     );
   }

@@ -49,48 +49,55 @@ class AppBackground extends StatelessWidget {
           ),
         ),
         child: Stack(
+          fit: StackFit.expand,
           children: [
-            if (showGlow) ...[
-              Positioned(
-                top: 80,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: Container(
-                    width: 340,
-                    height: 340,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      gradient: RadialGradient(
-                        colors: [
-                          const Color(0xFF0A84FF).withValues(alpha: 0.14),
-                          const Color(0xFF0A84FF).withValues(alpha: 0.04),
-                          Colors.transparent,
-                        ],
-                        stops: const [0.0, 0.45, 1.0],
+            if (showGlow)
+              IgnorePointer(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    Positioned(
+                      top: 80,
+                      left: 0,
+                      right: 0,
+                      child: Center(
+                        child: Container(
+                          width: 340,
+                          height: 340,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: RadialGradient(
+                              colors: [
+                                const Color(0xFF0A84FF).withValues(alpha: 0.14),
+                                const Color(0xFF0A84FF).withValues(alpha: 0.04),
+                                Colors.transparent,
+                              ],
+                              stops: const [0.0, 0.45, 1.0],
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ),
-              Positioned(
-                top: -40,
-                right: -60,
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        const Color(0xFF5856D6).withValues(alpha: 0.08),
-                        Colors.transparent,
-                      ],
+                    Positioned(
+                      top: -40,
+                      right: -60,
+                      child: Container(
+                        width: 180,
+                        height: 180,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          gradient: RadialGradient(
+                            colors: [
+                              const Color(0xFF5856D6).withValues(alpha: 0.08),
+                              Colors.transparent,
+                            ],
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
-            ],
             child,
           ],
         ),

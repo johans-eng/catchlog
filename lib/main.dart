@@ -104,6 +104,8 @@ class RootPage extends StatelessWidget {
 
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
+        height: 56,
+        iconSize: 26,
         activeColor: Color(0xFF0A84FF),
         backgroundColor: Color(0xFF1C1C1E),
         items: [

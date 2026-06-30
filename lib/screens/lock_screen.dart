@@ -7,6 +7,7 @@ import '../constants/app_security.dart';
 import '../services/app_config.dart';
 import '../widgets/jopies_logo.dart';
 import '../widgets/app_background.dart';
+import '../widgets/app_button.dart';
 
 class LockScreen extends StatefulWidget {
   final Widget child;
@@ -133,10 +134,9 @@ class _LockScreenState extends State<LockScreen> {
                       onSubmitted: (_) => check(),
                     ),
                     const SizedBox(height: 16),
-                    CheckboxListTile(
-                      contentPadding: EdgeInsets.zero,
+                    AppTapRow(
                       value: rememberDevice,
-                      activeColor: const Color(0xFF0A84FF),
+                      onChanged: (v) => setState(() => rememberDevice = v),
                       title: const Text(
                         'Onthoud op dit apparaat',
                         style: TextStyle(
@@ -145,41 +145,31 @@ class _LockScreenState extends State<LockScreen> {
                           decoration: TextDecoration.none,
                         ),
                       ),
-                      onChanged: (v) => setState(() => rememberDevice = v ?? false),
                     ),
-                    const SizedBox(height: 8),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 52,
-                      child: ElevatedButton(
-                        onPressed: check,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0A84FF),
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          'Unlock',
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.none,
-                          ),
+                    const SizedBox(height: 12),
+                    AppPrimaryButton(
+                      onPressed: check,
+                      child: const Text(
+                        'Unlock',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
+                          decoration: TextDecoration.none,
                         ),
                       ),
                     ),
                     if (biometricsAvailable) ...[
                       const SizedBox(height: 12),
-                      SizedBox(
-                        width: double.infinity,
-                        height: 52,
-                        child: OutlinedButton.icon(
-                          onPressed: _unlockWithBiometrics,
-                          icon: const Icon(Icons.face),
-                          label: const Text('Face ID / Touch ID'),
+                      AppSecondaryButton(
+                        onPressed: _unlockWithBiometrics,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.face),
+                            SizedBox(width: 8),
+                            Text('Face ID / Touch ID'),
+                          ],
                         ),
                       ),
                     ],

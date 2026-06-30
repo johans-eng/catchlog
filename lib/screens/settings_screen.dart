@@ -9,6 +9,7 @@ import '../services/app_config.dart';
 import '../services/firebase_service.dart';
 import '../utils/ntfy_links.dart';
 import '../widgets/app_background.dart';
+import '../widgets/app_button.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -162,31 +163,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       Row(
                         children: [
                           Expanded(
-                            child: OutlinedButton(
+                            child: AppSecondaryButton(
                               onPressed: AppConfig.roomCodeLocked
-                                ? null
-                                : () {
-                                    final code = AppConfig.generateRoomCode();
-                                    final topic = 'jopie-$code';
-                                    roomController.text = code;
-                                    ntfyController.text = topic;
-                                    AppConfig.roomCode = code;
-                                    AppConfig.ntfyTopic = topic;
-                                    setState(() {});
-                                  },
+                                  ? null
+                                  : () {
+                                      final code = AppConfig.generateRoomCode();
+                                      final topic = 'jopie-$code';
+                                      roomController.text = code;
+                                      ntfyController.text = topic;
+                                      AppConfig.roomCode = code;
+                                      AppConfig.ntfyTopic = topic;
+                                      setState(() {});
+                                    },
                               child: const Text('Nieuwe code'),
                             ),
                           ),
                           const SizedBox(width: 10),
                           Expanded(
-                            child: ElevatedButton(
+                            child: AppPrimaryButton(
                               onPressed: AppConfig.roomCode.isEmpty
                                   ? null
                                   : () => _copyLink(context),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF0A84FF),
+                              child: const Text(
+                                'Kopieer link',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: TextDecoration.none,
+                                ),
                               ),
-                              child: const Text('Kopieer link'),
                             ),
                           ),
                         ],
@@ -213,8 +218,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      SwitchListTile(
-                        contentPadding: EdgeInsets.zero,
+                      AppSwitchRow(
+                        value: AppConfig.trustedDevice,
+                        onChanged: (v) {
+                          setState(() => AppConfig.trustedDevice = v);
+                        },
                         title: const Text(
                           'Onthoud dit apparaat (PIN overslaan)',
                           style: TextStyle(
@@ -222,14 +230,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             decoration: TextDecoration.none,
                           ),
                         ),
-                        value: AppConfig.trustedDevice,
-                        activeThumbColor: const Color(0xFF0A84FF),
-                        onChanged: (v) {
-                          setState(() => AppConfig.trustedDevice = v);
-                        },
                       ),
                       const SizedBox(height: 8),
-                      OutlinedButton(
+                      AppSecondaryButton(
                         onPressed: () {
                           AppConfig.trustedDevice = false;
                           setState(() {});
@@ -297,21 +300,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 const SizedBox(height: 24),
                 SizedBox(
                   height: 52,
-                  child: ElevatedButton(
+                  child: AppPrimaryButton(
+                    color: const Color(0xFFFF453A),
                     onPressed: () => _confirmClear(context, box),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFFF453A),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 0,
-                    ),
                     child: const Text(
                       'Wis lokale data',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
+                        color: Colors.white,
                         decoration: TextDecoration.none,
                       ),
                     ),
@@ -332,8 +329,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (!_isViewer)
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
+            AppSwitchRow(
+              value: AppConfig.notifyPartner,
+              onChanged: (v) {
+                setState(() => AppConfig.notifyPartner = v);
+              },
               title: const Text(
                 'Stuur melding bij nieuwe dief',
                 style: TextStyle(
@@ -341,11 +341,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   decoration: TextDecoration.none,
                 ),
               ),
-              value: AppConfig.notifyPartner,
-              activeThumbColor: const Color(0xFF0A84FF),
-              onChanged: (v) {
-                setState(() => AppConfig.notifyPartner = v);
-              },
             ),
           if (!_isViewer) const SizedBox(height: 8),
           const Text(
@@ -404,15 +399,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
           ),
           if (showSubscribeButton && AppConfig.ntfyTopic.isNotEmpty) ...[
             const SizedBox(height: 16),
-            SizedBox(
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: () => _openNtfy(context),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF0A84FF),
-                ),
-                icon: const Icon(Icons.notifications_active_outlined),
-                label: const Text('Abonneren in ntfy'),
+            AppPrimaryButton(
+              onPressed: () => _openNtfy(context),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.notifications_active_outlined, color: Colors.white),
+                  SizedBox(width: 8),
+                  Text(
+                    'Abonneren in ntfy',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

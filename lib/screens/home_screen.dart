@@ -8,6 +8,7 @@ import '../services/firebase_service.dart';
 import '../utils/day_clock.dart';
 import '../utils/entry_stats.dart';
 import '../widgets/jopies_logo.dart';
+import '../widgets/app_button.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/app_background.dart';
 import 'glow_ring.dart';
@@ -291,49 +292,28 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
   }
 
   Widget _logButton(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: SizedBox(
-        width: double.infinity,
-        height: 56,
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(18),
-            gradient: const LinearGradient(
-              colors: [Color(0xFF0A84FF), Color(0xFF0066CC)],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF0A84FF).withValues(alpha: 0.35),
-                blurRadius: 20,
-                offset: const Offset(0, 6),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              borderRadius: BorderRadius.circular(18),
-              onTap: () => showAddEntrySheet(context),
-              child: const Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.add_circle_outline, color: Colors.white, size: 24),
-                  SizedBox(width: 10),
-                  Text(
-                    'Log dief',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                ],
-              ),
+    return AppPrimaryButton(
+      height: 56,
+      margin: const EdgeInsets.symmetric(horizontal: 20),
+      gradient: const LinearGradient(
+        colors: [Color(0xFF0A84FF), Color(0xFF0066CC)],
+      ),
+      onPressed: () => showAddEntrySheet(context),
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.add_circle_outline, color: Colors.white, size: 24),
+          SizedBox(width: 10),
+          Text(
+            'Log dief',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
+              decoration: TextDecoration.none,
             ),
           ),
-        ),
+        ],
       ),
     );
   }
