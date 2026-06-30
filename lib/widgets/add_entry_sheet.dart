@@ -1,0 +1,227 @@
+import 'package:flutter/material.dart';
+import 'package:hive/hive.dart';
+
+import '../constants/outcomes.dart';
+import 'success_notification.dart';
+
+Future<void> showAddEntrySheet(BuildContext context) {
+  return showModalBottomSheet<void>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) => const AddEntrySheet(),
+  );
+}
+
+class AddEntrySheet extends StatefulWidget {
+  const AddEntrySheet({super.key});
+
+  @override
+  State<AddEntrySheet> createState() => _AddEntrySheetState();
+}
+
+class _AddEntrySheetState extends State<AddEntrySheet> {
+  final amountController = TextEditingController();
+  final box = Hive.box('entries');
+  String selectedOutcome = Outcomes.all.first;
+
+  @override
+  void dispose() {
+    amountController.dispose();
+    super.dispose();
+  }
+
+  void save() {
+    final amount = int.tryParse(amountController.text.trim());
+    final messenger = ScaffoldMessenger.of(context);
+
+    if (amount == null || amount <= 0) {
+      messenger.showSnackBar(
+        const SnackBar(content: Text('Voer een geldig aantal in')),
+      );
+      return;
+    }
+
+    final overlay = Overlay.of(context, rootOverlay: true);
+
+    box.add({
+      'amount': amount,
+      'outcome': selectedOutcome,
+      'time': DateTime.now().millisecondsSinceEpoch,
+    });
+
+    Navigator.pop(context);
+    showCatchSuccessNotification(overlay);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: Container(
+        margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
+        decoration: BoxDecoration(
+          color: const Color(0xFF1C1C1E),
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF0A84FF).withValues(alpha: 0.15),
+              blurRadius: 30,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            const Text(
+              'Nieuwe dief',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'Hoeveel gestolen goederen?',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFF8E8E93),
+                fontSize: 13,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 24),
+            TextField(
+              controller: amountController,
+              keyboardType: TextInputType.number,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                decoration: TextDecoration.none,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Aantal',
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                  decoration: TextDecoration.none,
+                ),
+                filled: true,
+                fillColor: const Color(0xFF2C2C2E),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(14),
+                  borderSide: BorderSide.none,
+                ),
+                prefixIcon: const Icon(Icons.shopping_bag_outlined,
+                    color: Color(0xFF0A84FF)),
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Uitkomst',
+              style: TextStyle(
+                color: Color(0xFF8E8E93),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 1,
+                decoration: TextDecoration.none,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: const Color(0xFF2C2C2E),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  value: selectedOutcome,
+                  isExpanded: true,
+                  dropdownColor: const Color(0xFF2C2C2E),
+                  icon: const Icon(Icons.expand_more, color: Color(0xFF0A84FF)),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    decoration: TextDecoration.none,
+                  ),
+                  items: Outcomes.all
+                      .map(
+                        (o) => DropdownMenuItem(
+                          value: o,
+                          child: Row(
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Outcomes.colorFor(o),
+                                ),
+                              ),
+                              const SizedBox(width: 10),
+                              Text(
+                                o,
+                                style: const TextStyle(
+                                  decoration: TextDecoration.none,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) setState(() => selectedOutcome = value);
+                  },
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            SizedBox(
+              height: 52,
+              child: ElevatedButton(
+                onPressed: save,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0A84FF),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Opslaan',
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.none,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
