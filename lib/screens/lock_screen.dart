@@ -1,6 +1,9 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:local_auth/local_auth.dart';
 
 import '../constants/app_branding.dart';
+import '../constants/app_security.dart';
 import '../services/app_config.dart';
 import '../widgets/jopies_logo.dart';
 import '../widgets/app_background.dart';
@@ -16,11 +19,50 @@ class LockScreen extends StatefulWidget {
 
 class _LockScreenState extends State<LockScreen> {
   final controller = TextEditingController();
-  final pin = '1234';
+  final auth = LocalAuthentication();
   bool unlocked = false;
+  bool rememberDevice = false;
+  bool biometricsAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    if (AppConfig.isViewer || AppConfig.trustedDevice) {
+      unlocked = true;
+    }
+    _checkBiometrics();
+  }
+
+  Future<void> _checkBiometrics() async {
+    if (kIsWeb) return;
+    try {
+      final canCheck = await auth.canCheckBiometrics;
+      final supported = await auth.isDeviceSupported();
+      if (mounted) {
+        setState(() => biometricsAvailable = canCheck && supported);
+      }
+      if (AppConfig.biometricEnabled && biometricsAvailable && !unlocked) {
+        await _unlockWithBiometrics();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _unlockWithBiometrics() async {
+    try {
+      final ok = await auth.authenticate(
+        localizedReason: 'Ontgrendel ${AppBranding.name}',
+        options: const AuthenticationOptions(
+          stickyAuth: true,
+          biometricOnly: true,
+        ),
+      );
+      if (ok && mounted) setState(() => unlocked = true);
+    } catch (_) {}
+  }
 
   void check() {
-    if (controller.text == pin) {
+    if (controller.text == AppSecurity.pin) {
+      if (rememberDevice) AppConfig.trustedDevice = true;
       setState(() => unlocked = true);
     }
   }
@@ -34,7 +76,6 @@ class _LockScreenState extends State<LockScreen> {
   @override
   Widget build(BuildContext context) {
     if (AppConfig.isViewer) return widget.child;
-
     if (unlocked) return widget.child;
 
     return Scaffold(
@@ -89,8 +130,24 @@ class _LockScreenState extends State<LockScreen> {
                           borderSide: BorderSide.none,
                         ),
                       ),
+                      onSubmitted: (_) => check(),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 16),
+                    CheckboxListTile(
+                      contentPadding: EdgeInsets.zero,
+                      value: rememberDevice,
+                      activeColor: const Color(0xFF0A84FF),
+                      title: const Text(
+                        'Onthoud op dit apparaat',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 14,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                      onChanged: (v) => setState(() => rememberDevice = v ?? false),
+                    ),
+                    const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
                       height: 52,
@@ -114,6 +171,30 @@ class _LockScreenState extends State<LockScreen> {
                         ),
                       ),
                     ),
+                    if (biometricsAvailable) ...[
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 52,
+                        child: OutlinedButton.icon(
+                          onPressed: _unlockWithBiometrics,
+                          icon: const Icon(Icons.face),
+                          label: const Text('Face ID / Touch ID'),
+                        ),
+                      ),
+                    ],
+                    if (kIsWeb) ...[
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Face ID werkt niet in de browser-PWA. Gebruik "Onthoud op dit apparaat" na je PIN.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Color(0xFF8E8E93),
+                          fontSize: 12,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ],
                   ],
                 ),
               ),

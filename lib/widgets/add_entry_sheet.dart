@@ -23,30 +23,30 @@ class AddEntrySheet extends StatefulWidget {
 }
 
 class _AddEntrySheetState extends State<AddEntrySheet> {
-  final amountController = TextEditingController();
+  final valueController = TextEditingController();
   final store = EntryStore.instance;
   String selectedOutcome = Outcomes.all.first;
 
   @override
   void dispose() {
-    amountController.dispose();
+    valueController.dispose();
     super.dispose();
   }
 
   Future<void> save() async {
-    final amount = int.tryParse(amountController.text.trim());
+    final value = int.tryParse(valueController.text.trim());
     final messenger = ScaffoldMessenger.of(context);
 
-    if (amount == null || amount <= 0) {
+    if (value == null || value <= 0) {
       messenger.showSnackBar(
-        const SnackBar(content: Text('Voer een geldig aantal in')),
+        const SnackBar(content: Text('Voer een geldige waarde in (€)')),
       );
       return;
     }
 
     final overlay = Overlay.of(context, rootOverlay: true);
 
-    await store.addEntry(amount: amount, outcome: selectedOutcome);
+    await store.addEntry(amount: value, outcome: selectedOutcome);
 
     final entries = store.usesCloud
         ? await _fetchCloudEntries()
@@ -55,7 +55,7 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
     await NotifyService.notifyPartner(
       allEntries: entries,
       outcome: selectedOutcome,
-      amount: amount,
+      amount: value,
     );
 
     if (!context.mounted) return;
@@ -118,7 +118,7 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
             ),
             const SizedBox(height: 6),
             const Text(
-              'Hoeveel gestolen goederen?',
+              'Waarde van gestolen goederen (€)',
               textAlign: TextAlign.center,
               style: TextStyle(
                 color: Color(0xFF8E8E93),
@@ -128,7 +128,7 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
             ),
             const SizedBox(height: 24),
             TextField(
-              controller: amountController,
+              controller: valueController,
               keyboardType: TextInputType.number,
               style: const TextStyle(
                 color: Colors.white,
@@ -136,7 +136,7 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
                 decoration: TextDecoration.none,
               ),
               decoration: InputDecoration(
-                hintText: 'Aantal',
+                hintText: 'Waarde in euro',
                 hintStyle: TextStyle(
                   color: Colors.white.withValues(alpha: 0.3),
                   decoration: TextDecoration.none,
@@ -147,8 +147,7 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
                   borderRadius: BorderRadius.circular(14),
                   borderSide: BorderSide.none,
                 ),
-                prefixIcon: const Icon(Icons.shopping_bag_outlined,
-                    color: Color(0xFF0A84FF)),
+                prefixIcon: const Icon(Icons.euro, color: Color(0xFF0A84FF)),
               ),
             ),
             const SizedBox(height: 16),

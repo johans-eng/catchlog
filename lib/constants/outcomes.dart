@@ -17,4 +17,12 @@ class Outcomes {
 
   static Color colorFor(String outcome) =>
       colors[outcome] ?? const Color(0xFF8E8E93);
+
+  static String emojiFor(String outcome) => switch (outcome) {
+        weggerend => '🏃',
+        boete50 => '💶',
+        boete181 => '💸',
+        politie => '🚔',
+        _ => '🚨',
+      };
 }

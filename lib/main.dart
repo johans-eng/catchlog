@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import 'screens/calendar_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/stats_screen.dart';
 import 'screens/settings_screen.dart';
@@ -83,43 +84,38 @@ class RootPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isViewer = AppConfig.isViewer;
 
+    final items = isViewer
+        ? const [
+            (icon: CupertinoIcons.home, label: 'Live'),
+            (icon: CupertinoIcons.chart_bar, label: 'Stats'),
+            (icon: CupertinoIcons.calendar, label: 'Calendar'),
+            (icon: CupertinoIcons.bell, label: 'Meldingen'),
+          ]
+        : const [
+            (icon: CupertinoIcons.home, label: 'Home'),
+            (icon: CupertinoIcons.chart_bar, label: 'Stats'),
+            (icon: CupertinoIcons.calendar, label: 'Calendar'),
+            (icon: CupertinoIcons.settings, label: 'Settings'),
+          ];
+
     return CupertinoTabScaffold(
       tabBar: CupertinoTabBar(
         activeColor: Color(0xFF0A84FF),
         backgroundColor: Color(0xFF1C1C1E),
         items: [
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.home),
-            label: isViewer ? 'Live' : 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.chart_bar),
-            label: 'Stats',
-          ),
-          if (!isViewer)
-            BottomNavigationBarItem(
-              icon: Icon(CupertinoIcons.settings),
-              label: 'Settings',
-            ),
+          for (final item in items)
+            BottomNavigationBarItem(icon: Icon(item.icon), label: item.label),
         ],
       ),
       tabBuilder: (context, index) {
-        if (isViewer) {
-          switch (index) {
-            case 0:
-              return const HomeScreen();
-            case 1:
-              return const StatsScreen();
-            default:
-              return const HomeScreen();
-          }
-        }
         switch (index) {
           case 0:
             return const HomeScreen();
           case 1:
             return const StatsScreen();
           case 2:
+            return const CalendarScreen();
+          case 3:
             return const SettingsScreen();
           default:
             return const HomeScreen();

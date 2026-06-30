@@ -77,7 +77,7 @@ class StatsScreen extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        _sectionLabel('GESTOLEN GOEDEREN PER DAG'),
+                        _sectionLabel('WAARDE PER DAG (€)'),
                         const SizedBox(height: 12),
                         AppCard(
                           margin: EdgeInsets.zero,
@@ -99,8 +99,25 @@ class StatsScreen extends StatelessWidget {
                                 '${countTodayEntries(items)}',
                               ),
                               _summaryItem(
-                                'Goederen',
-                                '${_totalAmount(items)}',
+                                'Waarde',
+                                '€${totalValue(items)}',
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        AppCard(
+                          margin: EdgeInsets.zero,
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceAround,
+                            children: [
+                              _summaryItem(
+                                'Vandaag €',
+                                '€${todayValue(items)}',
+                              ),
+                              _summaryItem(
+                                'Streak',
+                                '${currentStreak(items)}d',
                               ),
                             ],
                           ),
@@ -317,7 +334,7 @@ class StatsScreen extends StatelessWidget {
     if (entries.every((e) => e.value == 0)) {
       return const Center(
         child: Text(
-          'Geen goederen geregistreerd',
+          'Geen waarde geregistreerd',
           style: TextStyle(
             color: Color(0xFF8E8E93),
             decoration: TextDecoration.none,
@@ -429,7 +446,7 @@ class StatsScreen extends StatelessWidget {
   }
 
   Map<DateTime, int> _dailyAmounts(List<dynamic> items, int days) {
-    return _dailyMap(items, days, (e) => (e['amount'] as int?) ?? 0);
+    return _dailyMap(items, days, entryValue);
   }
 
   Map<DateTime, int> _dailyMap(
@@ -454,12 +471,5 @@ class StatsScreen extends StatelessWidget {
     }
 
     return result;
-  }
-
-  int _totalAmount(List<dynamic> items) {
-    return items.fold<int>(
-      0,
-      (sum, e) => sum + ((e['amount'] as int?) ?? 0),
-    );
   }
 }

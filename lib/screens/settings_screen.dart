@@ -7,6 +7,7 @@ import '../constants/app_branding.dart';
 import '../firebase_options.dart';
 import '../services/app_config.dart';
 import '../services/firebase_service.dart';
+import '../utils/ntfy_links.dart';
 import '../widgets/app_background.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -19,6 +20,8 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late final TextEditingController roomController;
   late final TextEditingController ntfyController;
+
+  bool get _isViewer => AppConfig.isViewer;
 
   @override
   void initState() {
@@ -53,229 +56,319 @@ class _SettingsScreenState extends State<SettingsScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               ScreenTitle(
-                title: 'Settings',
-                subtitle: "Beheer je ${AppBranding.name} data",
+                title: _isViewer ? 'Meldingen' : 'Settings',
+                subtitle: _isViewer
+                    ? 'Ontvang pushmeldingen bij nieuwe vangsten'
+                    : "Beheer je ${AppBranding.name} data",
               ),
               const SizedBox(height: 24),
-              _section('DEEL MET PARTNER'),
-              AppCard(
-                margin: EdgeInsets.zero,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (!cloudReady) ...[
+              if (_isViewer) ...[
+                _ntfySection(showSubscribeButton: true),
+              ] else ...[
+                _section('DEEL MET PARTNER'),
+                AppCard(
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (!cloudReady) ...[
+                        const Text(
+                          'Firebase nog niet gekoppeld. Voeg je Firebase keys toe in Netlify om live delen te activeren.',
+                          style: TextStyle(
+                            color: Color(0xFFFF9F0A),
+                            fontSize: 13,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
                       const Text(
-                        'Firebase nog niet gekoppeld. Voeg je Firebase keys toe in Netlify (zie onder) om live delen te activeren.',
+                        'Deelcode',
                         style: TextStyle(
-                          color: Color(0xFFFF9F0A),
-                          fontSize: 13,
+                          color: Color(0xFF8E8E93),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
                           decoration: TextDecoration.none,
                         ),
                       ),
-                      const SizedBox(height: 16),
-                    ],
-                    const Text(
-                      'Deelcode',
-                      style: TextStyle(
-                        color: Color(0xFF8E8E93),
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: roomController,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        decoration: TextDecoration.none,
-                      ),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFF2C2C2E),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: 'bijv. jopie123',
-                        hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      onChanged: (v) => AppConfig.roomCode = v,
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              final code = AppConfig.generateRoomCode();
-                              final topic = 'jopie-$code';
-                              roomController.text = code;
-                              ntfyController.text = topic;
-                              AppConfig.roomCode = code;
-                              AppConfig.ntfyTopic = topic;
-                              setState(() {});
-                            },
-                            child: const Text('Nieuwe code'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: AppConfig.roomCode.isEmpty
-                                ? null
-                                : () => _copyLink(context),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF0A84FF),
-                            ),
-                            child: const Text('Kopieer link'),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      'Stuur de link naar je vriendin. Zij ziet live hoeveel vangsten je hebt.',
-                      style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontSize: 12,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              _section('NOTIFICATIES (GRATIS)'),
-              AppCard(
-                margin: EdgeInsets.zero,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    SwitchListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: const Text(
-                        'Stuur melding bij nieuwe dief',
-                        style: TextStyle(
+                      const SizedBox(height: 8),
+                      TextField(
+                        controller: roomController,
+                        style: const TextStyle(
                           color: Colors.white,
                           decoration: TextDecoration.none,
                         ),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: const Color(0xFF2C2C2E),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                            borderSide: BorderSide.none,
+                          ),
+                          hintText: 'bijv. jopie123',
+                          hintStyle: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.3),
+                          ),
+                        ),
+                        onChanged: (v) => AppConfig.roomCode = v,
                       ),
-                      value: AppConfig.notifyPartner,
-                      activeThumbColor: const Color(0xFF0A84FF),
-                      onChanged: (v) {
-                        setState(() => AppConfig.notifyPartner = v);
-                      },
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () {
+                                final code = AppConfig.generateRoomCode();
+                                final topic = 'jopie-$code';
+                                roomController.text = code;
+                                ntfyController.text = topic;
+                                AppConfig.roomCode = code;
+                                AppConfig.ntfyTopic = topic;
+                                setState(() {});
+                              },
+                              child: const Text('Nieuwe code'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: AppConfig.roomCode.isEmpty
+                                  ? null
+                                  : () => _copyLink(context),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF0A84FF),
+                              ),
+                              child: const Text('Kopieer link'),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Stuur de link naar je vriendin. Zij ziet live hoeveel vangsten je hebt.',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontSize: 12,
+                          decoration: TextDecoration.none,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _section('NOTIFICATIES (GRATIS)'),
+                _ntfySection(showSubscribeButton: false),
+                const SizedBox(height: 16),
+                _section('BEVEILIGING'),
+                AppCard(
+                  margin: EdgeInsets.zero,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text(
+                          'Onthoud dit apparaat (PIN overslaan)',
+                          style: TextStyle(
+                            color: Colors.white,
+                            decoration: TextDecoration.none,
+                          ),
+                        ),
+                        value: AppConfig.trustedDevice,
+                        activeThumbColor: const Color(0xFF0A84FF),
+                        onChanged: (v) {
+                          setState(() => AppConfig.trustedDevice = v);
+                        },
+                      ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: () {
+                          AppConfig.trustedDevice = false;
+                          setState(() {});
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Vertrouwd apparaat gereset'),
+                            ),
+                          );
+                        },
+                        child: const Text('Reset vertrouwd apparaat'),
+                      ),
+                      if (kIsWeb)
+                        const Padding(
+                          padding: EdgeInsets.only(top: 12),
+                          child: Text(
+                            'Face ID werkt niet in de browser-PWA. In een native app wel.',
+                            style: TextStyle(
+                              color: Color(0xFF8E8E93),
+                              fontSize: 12,
+                              decoration: TextDecoration.none,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _section('DATA'),
+                AppCard(
+                  margin: EdgeInsets.zero,
+                  child: ValueListenableBuilder(
+                    valueListenable: box.listenable(),
+                    builder: (context, _, __) {
+                      return Text(
+                        '${box.length} lokale entries opgeslagen',
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          decoration: TextDecoration.none,
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(height: 16),
+                if (DefaultFirebaseOptions.isConfigured)
+                  const Text(
+                    'Firebase: gekoppeld',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF30D158),
+                      decoration: TextDecoration.none,
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'ntfy topic (geheim woord)',
+                  )
+                else
+                  const Text(
+                    'Firebase: niet gekoppeld (nodig voor live delen)',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFF8E8E93),
+                      fontSize: 12,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                const SizedBox(height: 24),
+                SizedBox(
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () => _confirmClear(context, box),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFF453A),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Wis lokale data',
                       style: TextStyle(
-                        color: Color(0xFF8E8E93),
-                        fontSize: 12,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         decoration: TextDecoration.none,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: ntfyController,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        decoration: TextDecoration.none,
-                      ),
-                      decoration: InputDecoration(
-                        filled: true,
-                        fillColor: const Color(0xFF2C2C2E),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: BorderSide.none,
-                        ),
-                        hintText: 'jopie-catches-geheim',
-                        hintStyle: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      onChanged: (v) => AppConfig.ntfyTopic = v,
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Zij installeert de gratis ntfy app en abonneert op hetzelfde topic. Dan krijgt ze een pushmelding op haar telefoon.',
-                      style: TextStyle(
-                        color: Color(0xFF8E8E93),
-                        fontSize: 12,
-                        decoration: TextDecoration.none,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              _section('DATA'),
-              AppCard(
-                margin: EdgeInsets.zero,
-                child: ValueListenableBuilder(
-                  valueListenable: box.listenable(),
-                  builder: (context, _, __) {
-                    return Text(
-                      '${box.length} lokale entries opgeslagen',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        decoration: TextDecoration.none,
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16),
-              if (DefaultFirebaseOptions.isConfigured)
-                const Text(
-                  'Firebase: gekoppeld',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF30D158),
-                    decoration: TextDecoration.none,
-                  ),
-                )
-              else
-                const Text(
-                  'Firebase: niet gekoppeld (nodig voor live delen)',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: Color(0xFF8E8E93),
-                    fontSize: 12,
-                    decoration: TextDecoration.none,
                   ),
                 ),
-              const SizedBox(height: 24),
-              SizedBox(
-                height: 52,
-                child: ElevatedButton(
-                  onPressed: () => _confirmClear(context, box),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFF453A),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: const Text(
-                    'Wis lokale data',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      decoration: TextDecoration.none,
-                    ),
-                  ),
-                ),
-              ),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _ntfySection({required bool showSubscribeButton}) {
+    return AppCard(
+      margin: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (!_isViewer)
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              title: const Text(
+                'Stuur melding bij nieuwe dief',
+                style: TextStyle(
+                  color: Colors.white,
+                  decoration: TextDecoration.none,
+                ),
+              ),
+              value: AppConfig.notifyPartner,
+              activeThumbColor: const Color(0xFF0A84FF),
+              onChanged: (v) {
+                setState(() => AppConfig.notifyPartner = v);
+              },
+            ),
+          if (!_isViewer) const SizedBox(height: 8),
+          const Text(
+            'ntfy topic',
+            style: TextStyle(
+              color: Color(0xFF8E8E93),
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              decoration: TextDecoration.none,
+            ),
+          ),
+          const SizedBox(height: 8),
+          if (_isViewer)
+            SelectableText(
+              AppConfig.ntfyTopic.isEmpty
+                  ? 'Geen topic — open de gedeelde link opnieuw'
+                  : AppConfig.ntfyTopic,
+              style: const TextStyle(
+                color: Color(0xFF0A84FF),
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.none,
+              ),
+            )
+          else
+            TextField(
+              controller: ntfyController,
+              style: const TextStyle(
+                color: Colors.white,
+                decoration: TextDecoration.none,
+              ),
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: const Color(0xFF2C2C2E),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
+                ),
+                hintText: 'jopie-catches-geheim',
+                hintStyle: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.3),
+                ),
+              ),
+              onChanged: (v) => AppConfig.ntfyTopic = v,
+            ),
+          const SizedBox(height: 12),
+          Text(
+            _isViewer
+                ? 'Installeer de gratis ntfy app en abonneer op het topic hieronder.'
+                : 'Zij abonneert op hetzelfde topic in de ntfy app.',
+            style: const TextStyle(
+              color: Color(0xFF8E8E93),
+              fontSize: 12,
+              decoration: TextDecoration.none,
+            ),
+          ),
+          if (showSubscribeButton && AppConfig.ntfyTopic.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 52,
+              child: ElevatedButton.icon(
+                onPressed: () => _openNtfy(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF0A84FF),
+                ),
+                icon: const Icon(Icons.notifications_active_outlined),
+                label: const Text('Abonneren in ntfy'),
+              ),
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -291,6 +384,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
           fontWeight: FontWeight.w600,
           letterSpacing: 1.5,
           decoration: TextDecoration.none,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _openNtfy(BuildContext context) async {
+    final topic = AppConfig.ntfyTopic;
+    if (topic.isEmpty) return;
+
+    final ok = await NtfyLinks.openSubscribe(topic);
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? 'ntfy geopend — bevestig abonnement in de app'
+              : 'Kon ntfy niet openen. Installeer ntfy en voer topic handmatig in: $topic',
         ),
       ),
     );

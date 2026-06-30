@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 
+import '../constants/outcomes.dart';
 import '../utils/entry_stats.dart';
 import 'app_config.dart';
 
@@ -16,18 +17,19 @@ class NotifyService {
 
     final today = countTodayEntries(allEntries);
     final total = allEntries.length;
+    final emoji = Outcomes.emojiFor(outcome);
 
     final uri = Uri.parse('https://ntfy.sh/$topic');
     try {
       await http.post(
         uri,
         headers: {
-          'Title': "Jopie's Catches",
+          'Title': '$emoji $outcome — €$amount',
           'Priority': 'high',
           'Tags': 'rotating_light',
         },
         body:
-            'Dief gelogged! Vandaag: $today | Totaal: $total | $outcome | waarde €$amount',
+            "Jopie's Catches | Vandaag: $today | Totaal: $total | waarde €$amount",
       );
     } catch (_) {
       // Notification failure should not block logging.

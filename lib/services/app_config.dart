@@ -24,6 +24,16 @@ class AppConfig {
 
   static set notifyPartner(bool value) => _box.put('notifyPartner', value);
 
+  static bool get trustedDevice =>
+      _box.get('trustedDevice', defaultValue: false) as bool;
+
+  static set trustedDevice(bool value) => _box.put('trustedDevice', value);
+
+  static bool get biometricEnabled =>
+      _box.get('biometricEnabled', defaultValue: false) as bool;
+
+  static set biometricEnabled(bool value) => _box.put('biometricEnabled', value);
+
   static String generateRoomCode() {
     const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
     final random = Random.secure();
