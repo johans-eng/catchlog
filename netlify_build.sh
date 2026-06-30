@@ -2,7 +2,13 @@
 set -euo pipefail
 
 echo "Installing Flutter..."
-git clone https://github.com/flutter/flutter.git --depth 1 -b stable flutter-sdk
+if [ -f flutter-sdk/bin/flutter ]; then
+  echo "Reusing cached Flutter SDK"
+else
+  rm -rf flutter-sdk
+  git clone https://github.com/flutter/flutter.git --depth 1 -b stable flutter-sdk
+fi
+
 export PATH="$PWD/flutter-sdk/bin:$PATH"
 
 flutter --version
