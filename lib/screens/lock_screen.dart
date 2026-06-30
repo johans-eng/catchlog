@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../constants/app_branding.dart';
+import '../widgets/jopies_logo.dart';
 import '../widgets/app_background.dart';
 
 class LockScreen extends StatefulWidget {
@@ -45,11 +46,7 @@ class _LockScreenState extends State<LockScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Image.asset(
-                      AppBranding.logoAsset,
-                      width: 72,
-                      height: 72,
-                    ),
+                    JopiesLogo(size: 72),
                     const SizedBox(height: 16),
                     const Text(
                       AppBranding.name,

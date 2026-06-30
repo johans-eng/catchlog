@@ -4,6 +4,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import '../constants/app_branding.dart';
 import '../utils/day_clock.dart';
 import '../utils/entry_stats.dart';
+import '../widgets/jopies_logo.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/app_background.dart';
 import 'glow_ring.dart';
@@ -59,11 +60,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
             child: Column(
               children: [
                 const SizedBox(height: 20),
-                Image.asset(
-                  AppBranding.logoAsset,
-                  width: 56,
-                  height: 56,
-                ),
+                JopiesLogo(size: 56),
                 const SizedBox(height: 12),
                 const Text(
                   AppBranding.name,
