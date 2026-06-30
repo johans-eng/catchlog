@@ -2,6 +2,10 @@
   command = "bash netlify_build.sh"
   publish = "build/web"
 
+[build.environment]
+  # Firebase web config is public client-side (dart-define); project id also matches app package name.
+  SECRETS_SCAN_OMIT_KEYS = "FIREBASE_API_KEY,FIREBASE_APP_ID,FIREBASE_PROJECT_ID,FIREBASE_MESSAGING_SENDER_ID,FIREBASE_AUTH_DOMAIN,FIREBASE_STORAGE_BUCKET,FIREBASE_MEASUREMENT_ID"
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
