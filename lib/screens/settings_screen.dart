@@ -93,7 +93,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Vastgezet via jouw link. Add to Home Screen om te bewaren.',
+                        'Vastgezet via jouw link. Voeg toe aan beginscherm terwijl je op deze pagina bent.',
                         style: TextStyle(
                           color: Color(0xFF8E8E93),
                           fontSize: 12,

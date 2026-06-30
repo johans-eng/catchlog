@@ -2,6 +2,8 @@ import 'dart:math';
 
 import 'package:hive/hive.dart';
 
+import 'viewer_persistence.dart';
+
 class AppConfig {
   static Box get _box => Hive.box('settings');
 
@@ -66,6 +68,8 @@ class AppConfig {
     if (ntfy != null && ntfy.isNotEmpty) {
       ntfyTopic = ntfy;
     }
+    ViewerPersistence.save(room: room, ntfy: ntfy);
+    ViewerPersistence.replaceViewerUrl(room, ntfy);
   }
 
   static String generateRoomCode() {
@@ -78,14 +82,9 @@ class AppConfig {
   }
 
   static String shareLink(String baseUrl) {
-    final base = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
-    final params = <String, String>{
-      'room': roomCode,
-      'viewer': '1',
-    };
-    if (ntfyTopic.isNotEmpty) {
-      params['ntfy'] = ntfyTopic;
-    }
-    return Uri.parse(base).replace(queryParameters: params).toString();
+    final base = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
+    final path = '$base/view/${Uri.encodeComponent(roomCode)}';
+    if (ntfyTopic.isEmpty) return path;
+    return Uri.parse(path).replace(queryParameters: {'ntfy': ntfyTopic}).toString();
   }
 }

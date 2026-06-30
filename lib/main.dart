@@ -11,6 +11,7 @@ import 'screens/settings_screen.dart';
 import 'screens/lock_screen.dart';
 import 'services/app_config.dart';
 import 'services/firebase_service.dart';
+import 'services/launch_config.dart';
 import 'utils/day_clock.dart';
 
 void main() async {
@@ -23,29 +24,11 @@ void main() async {
   await Hive.openBox('entries');
   await Hive.openBox('settings');
   if (kIsWeb) {
-    _applyWebLaunchParams();
+    LaunchConfig.apply();
   }
   await FirebaseService.init();
 
   runApp(const JopiesCatchesApp());
-}
-
-void _applyWebLaunchParams() {
-  final room = Uri.base.queryParameters['room'];
-  final viewer = Uri.base.queryParameters['viewer'];
-  final ntfy = Uri.base.queryParameters['ntfy'];
-
-  if (viewer == '1' && room != null && room.isNotEmpty) {
-    AppConfig.applyViewerLink(room: room, ntfy: ntfy);
-    return;
-  }
-
-  if (room != null && room.isNotEmpty) {
-    AppConfig.roomCode = room;
-  }
-  if (ntfy != null && ntfy.isNotEmpty) {
-    AppConfig.ntfyTopic = ntfy;
-  }
 }
 
 class JopiesCatchesApp extends StatelessWidget {
