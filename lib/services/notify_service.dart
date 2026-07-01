@@ -68,10 +68,10 @@ class NotifyService {
         body: body,
       );
 
-      if (response.statusCode >= 200 && response.statusCode < 300) {
+      if (_looksLikeNtfyOk(response)) {
         return true;
       }
-      debugPrint('ntfy proxy ${response.statusCode}: ${response.body}');
+      debugPrint('ntfy proxy bad response ${response.statusCode}: ${response.body.substring(0, response.body.length.clamp(0, 120))}');
     } catch (e) {
       debugPrint('ntfy same-origin proxy error: $e');
     }
@@ -94,7 +94,7 @@ class NotifyService {
 
     if (headersInBodyOnly) {
       final response = await http.post(uri, body: '$title\n$body');
-      return response.statusCode >= 200 && response.statusCode < 300;
+      return _looksLikeNtfyOk(response);
     }
 
     final response = await http.post(
@@ -107,6 +107,13 @@ class NotifyService {
       body: body,
     );
 
-    return response.statusCode >= 200 && response.statusCode < 300;
+    return _looksLikeNtfyOk(response);
+  }
+
+  static bool _looksLikeNtfyOk(http.Response response) {
+    if (response.statusCode < 200 || response.statusCode >= 300) return false;
+    final text = response.body.trimLeft();
+    if (text.startsWith('<!') || text.startsWith('<html')) return false;
+    return true;
   }
 }

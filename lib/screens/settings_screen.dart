@@ -42,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   String get _baseUrl {
     if (kIsWeb) return Uri.base.origin;
-    return 'https://jopies-catches.netlify.app';
+    return 'https://catchlog.netlify.app';
   }
 
   @override
