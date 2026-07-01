@@ -2,6 +2,12 @@
   command = "bash netlify_build.sh"
   publish = "build/web"
 
+# Reuse Flutter SDK + pub cache between deploys (saves build minutes/credits).
+[[plugins]]
+  package = "netlify-plugin-cache"
+  [plugins.inputs]
+    paths = ["flutter-sdk", ".pub-cache", ".dart_tool"]
+
 [functions]
   directory = "netlify/functions"
 

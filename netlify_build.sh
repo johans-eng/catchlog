@@ -1,19 +1,32 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "Installing Flutter..."
-if [ -f flutter-sdk/bin/flutter ]; then
+# Cached between Netlify builds via netlify-plugin-cache (see netlify.toml).
+export PUB_CACHE="${PUB_CACHE:-$PWD/.pub-cache}"
+mkdir -p "$PUB_CACHE"
+
+FLUTTER_DIR="$PWD/flutter-sdk"
+export PATH="$FLUTTER_DIR/bin:$PATH"
+
+if [ -x "$FLUTTER_DIR/bin/flutter" ]; then
   echo "Reusing cached Flutter SDK"
 else
-  rm -rf flutter-sdk
-  git clone https://github.com/flutter/flutter.git --depth 1 -b stable flutter-sdk
+  echo "Downloading Flutter SDK (cache miss — slower build)..."
+  rm -rf "$FLUTTER_DIR"
+  git clone https://github.com/flutter/flutter.git --depth 1 -b stable "$FLUTTER_DIR"
 fi
 
-export PATH="$PWD/flutter-sdk/bin:$PATH"
-
 flutter --version
-flutter config --no-analytics --enable-web
-flutter precache --web
+
+if [ ! -f "$FLUTTER_DIR/.web-precached" ]; then
+  echo "Precaching Flutter web artifacts..."
+  flutter config --no-analytics --enable-web
+  flutter precache --web
+  touch "$FLUTTER_DIR/.web-precached"
+else
+  echo "Skipping precache (cached)"
+fi
+
 flutter pub get
 
 BUILD_ARGS=(build web --release --no-wasm-dry-run)
