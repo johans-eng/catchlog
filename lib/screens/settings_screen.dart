@@ -486,16 +486,123 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final topic = AppConfig.effectiveNtfyTopic;
     if (topic.isEmpty) return;
 
-    final ok = await NtfyLinks.openSubscribe(topic);
+    final result = await NtfyLinks.openSubscribe(topic);
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          ok
-              ? 'ntfy app geopend — bevestig abonnement op $topic'
-              : 'Kon ntfy niet openen. Installeer ntfy en voer topic handmatig in: $topic',
-        ),
-      ),
+
+    switch (result.mode) {
+      case NtfySubscribeMode.iosManual:
+        _showIosNtfySheet(context, topic);
+      case NtfySubscribeMode.appDeepLink:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('ntfy app geopend — bevestig abonnement op $topic'),
+          ),
+        );
+      case NtfySubscribeMode.failed:
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Kon ntfy niet openen. Installeer ntfy en voer topic handmatig in: $topic',
+            ),
+          ),
+        );
+    }
+  }
+
+  void _showIosNtfySheet(BuildContext context, String topic) {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.fromLTRB(
+            16,
+            0,
+            16,
+            16 + MediaQuery.of(context).viewPadding.bottom,
+          ),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: const Color(0xFF1C1C1E),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: const Color(0xFF3A3A3C)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text(
+                    'Abonneren in ntfy',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Safari kan de ntfy app niet direct openen op iPhone. '
+                    'Topic is gekopieerd — plak het in de ntfy app:',
+                    style: TextStyle(
+                      color: Color(0xFF8E8E93),
+                      fontSize: 14,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SelectableText(
+                    topic,
+                    style: const TextStyle(
+                      color: Color(0xFF0A84FF),
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    '1. Open de ntfy app\n'
+                    '2. Tik op +\n'
+                    '3. Plak het topic',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 15,
+                      height: 1.5,
+                      decoration: TextDecoration.none,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  AppPrimaryButton(
+                    onPressed: () => NtfyLinks.openAppStore(),
+                    child: const Text(
+                      'Installeer ntfy (App Store)',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                        decoration: TextDecoration.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  AppSecondaryButton(
+                    onPressed: () {
+                      Clipboard.setData(ClipboardData(text: topic));
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Topic opnieuw gekopieerd')),
+                      );
+                    },
+                    child: const Text('Kopieer topic opnieuw'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
