@@ -9,6 +9,7 @@ import '../utils/day_clock.dart';
 import '../utils/entry_stats.dart';
 import '../widgets/jopies_logo.dart';
 import '../widgets/app_button.dart';
+import '../widgets/tab_safe_area.dart';
 import '../widgets/add_entry_sheet.dart';
 import '../widgets/app_background.dart';
 import 'glow_ring.dart';
@@ -74,7 +75,7 @@ class _HomeScreenState extends State<HomeScreen> with WidgetsBindingObserver {
     final isActive = todayCount > 0;
 
     return AppScaffold(
-      body: SafeArea(
+      body: TabSafeArea(
         child: Column(
           children: [
             Expanded(

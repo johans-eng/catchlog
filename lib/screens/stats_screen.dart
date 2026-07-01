@@ -8,6 +8,7 @@ import '../utils/day_clock.dart';
 import '../utils/entry_stats.dart';
 import '../constants/outcomes.dart';
 import '../widgets/app_background.dart';
+import '../widgets/tab_safe_area.dart';
 
 class StatsScreen extends StatelessWidget {
   const StatsScreen({super.key});
@@ -45,7 +46,7 @@ class StatsScreen extends StatelessWidget {
 
         return AppScaffold(
           showGlow: false,
-          body: SafeArea(
+          body: TabSafeArea(
             child: items.isEmpty
                 ? _emptyState()
                 : SingleChildScrollView(

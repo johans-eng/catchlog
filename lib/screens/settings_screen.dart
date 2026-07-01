@@ -10,6 +10,7 @@ import '../services/firebase_service.dart';
 import '../utils/ntfy_links.dart';
 import '../widgets/app_background.dart';
 import '../widgets/app_button.dart';
+import '../widgets/tab_safe_area.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -50,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     return AppScaffold(
       showGlow: false,
-      body: SafeArea(
+      body: TabSafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
           child: Column(

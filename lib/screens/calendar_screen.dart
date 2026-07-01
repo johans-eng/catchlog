@@ -5,6 +5,7 @@ import '../services/entry_store.dart';
 import '../utils/day_clock.dart';
 import '../utils/entry_stats.dart';
 import '../widgets/app_background.dart';
+import '../widgets/tab_safe_area.dart';
 
 class CalendarScreen extends StatelessWidget {
   const CalendarScreen({super.key});
@@ -50,7 +51,7 @@ class CalendarScreen extends StatelessWidget {
 
     return AppScaffold(
       showGlow: false,
-      body: SafeArea(
+      body: TabSafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 20, 16, 24),
           child: Column(

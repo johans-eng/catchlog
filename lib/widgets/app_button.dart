@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 /// Full-size tappable button with a reliable hit target (min 52px).
@@ -29,23 +30,37 @@ class AppPrimaryButton extends StatelessWidget {
       child: SizedBox(
         width: double.infinity,
         height: height,
-        child: Material(
-          color: Colors.transparent,
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: radius,
-              gradient: gradient,
-              color: gradient == null ? bg : null,
-            ),
-            child: InkWell(
-              onTap: onPressed,
-              borderRadius: radius,
-              splashColor: Colors.white24,
-              highlightColor: Colors.white12,
-              child: Center(child: child),
-            ),
-          ),
-        ),
+        child: kIsWeb
+            ? ElevatedButton(
+                onPressed: onPressed,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: bg,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size(double.infinity, height),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  shape: RoundedRectangleBorder(borderRadius: radius),
+                ),
+                child: child,
+              )
+            : Material(
+                color: Colors.transparent,
+                child: Ink(
+                  decoration: BoxDecoration(
+                    borderRadius: radius,
+                    gradient: gradient,
+                    color: gradient == null ? bg : null,
+                  ),
+                  child: InkWell(
+                    onTap: onPressed,
+                    borderRadius: radius,
+                    splashColor: Colors.white24,
+                    highlightColor: Colors.white12,
+                    child: Center(child: child),
+                  ),
+                ),
+              ),
       ),
     );
   }
@@ -77,6 +92,8 @@ class AppSecondaryButton extends StatelessWidget {
           side: BorderSide(color: Colors.white.withValues(alpha: 0.2)),
           shape: RoundedRectangleBorder(borderRadius: radius),
           padding: EdgeInsets.zero,
+          minimumSize: Size(double.infinity, height),
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         ),
         child: child,
       ),

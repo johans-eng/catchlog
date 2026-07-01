@@ -11,7 +11,7 @@
   <meta name="theme-color" content="#050508">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Jopie's">
   <meta name="format-detection" content="telephone=no">
 
@@ -23,14 +23,36 @@
   <title>Jopie's Catches</title>
 
   <style>
+    html {
+      height: 100%;
+      height: -webkit-fill-available;
+    }
+
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
+      width: 100%;
       background: #050508;
       overflow: hidden;
       -webkit-tap-highlight-color: transparent;
       touch-action: manipulation;
+      overscroll-behavior: none;
+    }
+
+    body {
+      position: fixed;
+      inset: 0;
+      min-height: 100%;
+      min-height: 100dvh;
+      min-height: -webkit-fill-available;
+    }
+
+    flutter-view,
+    flt-glass-pane {
+      position: fixed !important;
+      inset: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
     }
 
     #splash {
