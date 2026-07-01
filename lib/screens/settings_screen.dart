@@ -483,7 +483,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _openNtfy(BuildContext context) async {
-    final topic = AppConfig.ntfyTopic;
+    final topic = AppConfig.effectiveNtfyTopic;
     if (topic.isEmpty) return;
 
     final ok = await NtfyLinks.openSubscribe(topic);
@@ -492,7 +492,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       SnackBar(
         content: Text(
           ok
-              ? 'ntfy geopend — bevestig abonnement in de app'
+              ? 'ntfy app geopend — bevestig abonnement op $topic'
               : 'Kon ntfy niet openen. Installeer ntfy en voer topic handmatig in: $topic',
         ),
       ),
