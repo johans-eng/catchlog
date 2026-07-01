@@ -388,6 +388,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
               onChanged: (v) => AppConfig.ntfyTopic = v,
             ),
+          if (!_isViewer &&
+              AppConfig.ntfyTopic.isEmpty &&
+              AppConfig.roomCode.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            SelectableText(
+              'Actief topic: ${AppConfig.effectiveNtfyTopic}',
+              style: const TextStyle(
+                color: Color(0xFF0A84FF),
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.none,
+              ),
+            ),
+          ],
           const SizedBox(height: 12),
           Text(
             _isViewer

@@ -17,7 +17,9 @@ exports.handler = async (event) => {
     };
   }
 
-  const topic = event.path.replace(/^.*\/ntfy-proxy\/?/, '');
+  const topic =
+    event.queryStringParameters?.topic ||
+    event.path.replace(/^.*\/ntfy-proxy\/?/, '');
   if (!topic) {
     return {
       statusCode: 400,
