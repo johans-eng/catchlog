@@ -2,14 +2,17 @@
   command = "bash netlify_build.sh"
   publish = "build/web"
 
+[functions]
+  directory = "netlify/functions"
+
 [build.environment]
   # Firebase web config is public client-side (dart-define); project id also matches app package name.
   SECRETS_SCAN_OMIT_KEYS = "FIREBASE_API_KEY,FIREBASE_APP_ID,FIREBASE_PROJECT_ID,FIREBASE_MESSAGING_SENDER_ID,FIREBASE_AUTH_DOMAIN,FIREBASE_STORAGE_BUCKET,FIREBASE_MEASUREMENT_ID"
 
-# Proxy ntfy publishes same-origin so the PWA avoids CORS (must be before SPA catch-all).
+# Same-origin ntfy proxy (function handles POST + CORS preflight).
 [[redirects]]
   from = "/api/ntfy/*"
-  to = "https://ntfy.sh/:splat"
+  to = "/.netlify/functions/ntfy-proxy/:splat"
   status = 200
   force = true
 

@@ -1,2 +1,2 @@
-/api/ntfy/*  https://ntfy.sh/:splat  200!
+/api/ntfy/*  /.netlify/functions/ntfy-proxy/:splat  200!
 /*    /index.html   200

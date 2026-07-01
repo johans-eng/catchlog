@@ -34,6 +34,15 @@ class AppConfig {
   static String get ntfyTopic =>
       (_box.get('ntfyTopic') as String?)?.trim() ?? '';
 
+  /// Topic used for sends/subscribe — falls back to jopie-{roomCode}.
+  static String get effectiveNtfyTopic {
+    final topic = ntfyTopic;
+    if (topic.isNotEmpty) return topic;
+    final room = roomCode;
+    if (room.isNotEmpty) return 'jopie-$room';
+    return '';
+  }
+
   static set ntfyTopic(String value) {
     final trimmed = value.trim();
     if (_isRoomCodeLocked && ntfyTopic.isNotEmpty && trimmed != ntfyTopic) {
@@ -84,7 +93,8 @@ class AppConfig {
   static String shareLink(String baseUrl) {
     final base = baseUrl.endsWith('/') ? baseUrl.substring(0, baseUrl.length - 1) : baseUrl;
     final path = '$base/view/${Uri.encodeComponent(roomCode)}';
-    if (ntfyTopic.isEmpty) return path;
-    return Uri.parse(path).replace(queryParameters: {'ntfy': ntfyTopic}).toString();
+    final topic = effectiveNtfyTopic;
+    if (topic.isEmpty) return path;
+    return Uri.parse(path).replace(queryParameters: {'ntfy': topic}).toString();
   }
 }

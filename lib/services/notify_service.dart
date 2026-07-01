@@ -13,9 +13,9 @@ class NotifyService {
   }) async {
     if (!AppConfig.notifyPartner) return false;
 
-    final topic = AppConfig.ntfyTopic.trim();
+    final topic = AppConfig.effectiveNtfyTopic.trim();
     if (topic.isEmpty) {
-      debugPrint('ntfy: skipped — no topic configured');
+      debugPrint('ntfy: skipped — no topic (set room code or ntfy topic)');
       return false;
     }
 
@@ -28,17 +28,15 @@ class NotifyService {
         '$emoji Jopie\'s Catches | Vandaag: $today | Totaal: $total | waarde EUR $amount';
 
     try {
+      // ntfy.sh allows browser CORS; direct POST is most reliable on web.
       final ok = kIsWeb
-          ? await _sendViaSameOriginProxy(
-              topic: topic,
-              title: title,
-              body: body,
-            )
-          : await _sendDirectToNtfy(
-              topic: topic,
-              title: title,
-              body: body,
-            );
+          ? await _sendDirectToNtfy(topic: topic, title: title, body: body) ||
+              await _sendViaSameOriginProxy(
+                topic: topic,
+                title: title,
+                body: body,
+              )
+          : await _sendDirectToNtfy(topic: topic, title: title, body: body);
 
       if (!ok) debugPrint('ntfy: delivery failed for topic $topic');
       return ok;
@@ -48,7 +46,6 @@ class NotifyService {
     }
   }
 
-  /// Same-origin POST proxied by Netlify to ntfy.sh (see netlify.toml).
   static Future<bool> _sendViaSameOriginProxy({
     required String topic,
     required String title,
@@ -68,46 +65,47 @@ class NotifyService {
         body: body,
       );
 
-      if (_looksLikeNtfyOk(response)) {
-        return true;
-      }
-      debugPrint('ntfy proxy bad response ${response.statusCode}: ${response.body.substring(0, response.body.length.clamp(0, 120))}');
+      if (_looksLikeNtfyOk(response)) return true;
+      debugPrint(
+        'ntfy proxy bad response ${response.statusCode}: '
+        '${response.body.substring(0, response.body.length.clamp(0, 120))}',
+      );
     } catch (e) {
       debugPrint('ntfy same-origin proxy error: $e');
     }
 
-    return _sendDirectToNtfy(
-      topic: topic,
-      title: title,
-      body: body,
-      headersInBodyOnly: true,
-    );
+    return false;
   }
 
   static Future<bool> _sendDirectToNtfy({
     required String topic,
     required String title,
     required String body,
-    bool headersInBodyOnly = false,
   }) async {
     final uri = Uri.parse('https://ntfy.sh/${Uri.encodeComponent(topic)}');
 
-    if (headersInBodyOnly) {
-      final response = await http.post(uri, body: '$title\n$body');
-      return _looksLikeNtfyOk(response);
+    try {
+      final response = await http.post(
+        uri,
+        headers: {
+          'Title': title,
+          'Priority': 'high',
+          'Tags': 'rotating_light',
+        },
+        body: body,
+      );
+      if (_looksLikeNtfyOk(response)) return true;
+    } catch (e) {
+      debugPrint('ntfy direct headers error: $e');
     }
 
-    final response = await http.post(
-      uri,
-      headers: {
-        'Title': title,
-        'Priority': 'high',
-        'Tags': 'rotating_light',
-      },
-      body: body,
-    );
-
-    return _looksLikeNtfyOk(response);
+    try {
+      final response = await http.post(uri, body: '$title\n$body');
+      return _looksLikeNtfyOk(response);
+    } catch (e) {
+      debugPrint('ntfy direct body-only error: $e');
+      return false;
+    }
   }
 
   static bool _looksLikeNtfyOk(http.Response response) {

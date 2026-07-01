@@ -399,14 +399,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
               decoration: TextDecoration.none,
             ),
           ),
-          if (!_isViewer && AppConfig.ntfyTopic.isNotEmpty) ...[
+          if (!_isViewer &&
+              AppConfig.effectiveNtfyTopic.isNotEmpty) ...[
             const SizedBox(height: 12),
             AppSecondaryButton(
               onPressed: () => _testNotification(context),
               child: const Text('Test melding'),
             ),
           ],
-          if (showSubscribeButton && AppConfig.ntfyTopic.isNotEmpty) ...[
+          if (showSubscribeButton &&
+              AppConfig.effectiveNtfyTopic.isNotEmpty) ...[
             const SizedBox(height: 16),
             AppPrimaryButton(
               onPressed: () => _openNtfy(context),
@@ -459,8 +461,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       SnackBar(
         content: Text(
           ok
-              ? 'Testmelding verzonden naar ${AppConfig.ntfyTopic}'
-              : 'Testmelding mislukt — check topic en redeploy',
+              ? 'Testmelding verzonden naar ${AppConfig.effectiveNtfyTopic}'
+              : 'Testmelding mislukt — check topic, meldingen aan, en ntfy app',
         ),
       ),
     );
