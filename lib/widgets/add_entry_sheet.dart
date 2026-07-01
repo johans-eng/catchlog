@@ -65,13 +65,24 @@ class _AddEntrySheetState extends State<AddEntrySheet> {
         ? await _fetchCloudEntries()
         : store.localEntries;
 
-    await NotifyService.notifyPartner(
+    final notified = await NotifyService.notifyPartner(
       allEntries: entries,
       outcome: selectedOutcome,
       amount: value,
     );
 
     if (!context.mounted) return;
+    if (!notified) {
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Dief opgeslagen, maar pushmelding mislukt. '
+            'Check ntfy topic in Settings.',
+          ),
+        ),
+      );
+    }
+
     Navigator.pop(context);
     showCatchSuccessNotification(overlay);
   }

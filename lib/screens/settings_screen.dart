@@ -7,6 +7,7 @@ import '../constants/app_branding.dart';
 import '../firebase_options.dart';
 import '../services/app_config.dart';
 import '../services/firebase_service.dart';
+import '../services/notify_service.dart';
 import '../utils/ntfy_links.dart';
 import '../widgets/app_background.dart';
 import '../widgets/app_button.dart';
@@ -398,6 +399,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               decoration: TextDecoration.none,
             ),
           ),
+          if (!_isViewer && AppConfig.ntfyTopic.isNotEmpty) ...[
+            const SizedBox(height: 12),
+            AppSecondaryButton(
+              onPressed: () => _testNotification(context),
+              child: const Text('Test melding'),
+            ),
+          ],
           if (showSubscribeButton && AppConfig.ntfyTopic.isNotEmpty) ...[
             const SizedBox(height: 16),
             AppPrimaryButton(
@@ -435,6 +443,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
           fontWeight: FontWeight.w600,
           letterSpacing: 1.5,
           decoration: TextDecoration.none,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _testNotification(BuildContext context) async {
+    final ok = await NotifyService.notifyPartner(
+      allEntries: const [],
+      outcome: 'Test',
+      amount: 1,
+    );
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          ok
+              ? 'Testmelding verzonden naar ${AppConfig.ntfyTopic}'
+              : 'Testmelding mislukt — check topic en redeploy',
         ),
       ),
     );
